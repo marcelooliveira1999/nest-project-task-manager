@@ -1,0 +1,26 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:17.2-alpine3.20
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - /var/data/postgresql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - net
+
+  redis:
+    container_name: redis
+    image: redis:7.4.1-alpine3.20
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    networks:
+      - net
+
+networks:
+  net:
+    driver: bridge
