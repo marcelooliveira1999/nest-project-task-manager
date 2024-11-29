@@ -3,7 +3,7 @@ services:
     container_name: postgres
     image: postgres:17.2-alpine3.20
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - ${POSTGRES_PORT}:5432
     volumes:
       - /var/data/postgresql:/var/lib/postgresql/data
     environment:
