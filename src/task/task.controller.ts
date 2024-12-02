@@ -5,14 +5,17 @@ import {
   Get,
   Param,
   Patch,
-  Post
+  Post,
+  UseGuards
 } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskStatusEnum } from './enum/task-status.enum';
 import { TaskService } from './task.service';
 
 @Controller('task')
+@UseGuards(AuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
