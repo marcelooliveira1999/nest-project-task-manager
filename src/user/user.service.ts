@@ -59,4 +59,8 @@ export class UserService {
     await this.userReporitory.update({ id }, { password });
     return { message: 'Password updated successfully' };
   }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.userReporitory.findOneBy({ email });
+  }
 }
