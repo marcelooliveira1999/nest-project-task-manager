@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, PartialType } from '@nestjs/swagger';
@@ -34,10 +35,13 @@ export class TaskController {
     return this.taskService.create(createTaskDto);
   }
 
-  @Get()
+  @Get('book')
   @FindAllTasksDocumentation()
-  findAll() {
-    return this.taskService.findAll();
+  findAll(
+    @Query('page', new ParseIntPipe()) page: number,
+    @Query('limit', new ParseIntPipe()) limit: number
+  ) {
+    return this.taskService.findAll({ page, limit });
   }
 
   @Get(':id')
