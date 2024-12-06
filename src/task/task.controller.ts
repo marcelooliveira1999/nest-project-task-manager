@@ -4,21 +4,21 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiParam,
-  ApiResponse,
-  PartialType
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiParam, PartialType } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { CreateTaskDocumentation } from './docs/create-task.doc';
+import { FindAllTasksDocumentation } from './docs/find-all-tasks.doc';
+import { FindOneTaskDocumentation } from './docs/find-one-task.doc';
+import { RemoveTaskDocumentation } from './docs/remove-task.doc';
+import { TaskStatusUpdateDocumentation } from './docs/task-status-update.doc';
+import { UpdateTaskDocumentation } from './docs/update-task.doc';
 import { CreateTaskDto } from './dto/create-task.dto';
-import { MessageResponseDto } from './dto/message-response.dto';
-import { TaskResponseDto } from './dto/task-response.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskStatusEnum } from './enum/task-status.enum';
 import { TaskService } from './task.service';
@@ -30,100 +30,70 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
-  @ApiResponse({
-    status: 201,
-    description: 'Task created',
-    type: TaskResponseDto
-  })
+  @CreateTaskDocumentation()
   create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.create(createTaskDto);
   }
 
-  @Get()
-  @ApiResponse({
-    status: 200,
-    description: 'Tasks found',
-    type: [TaskResponseDto]
-  })
-  findAll() {
-    return this.taskService.findAll();
+  @Get('book')
+  @FindAllTasksDocumentation()
+  findAll(
+    @Query('page', new ParseIntPipe()) page: number,
+    @Query('limit', new ParseIntPipe()) limit: number
+  ) {
+    return this.taskService.findAll({ page, limit });
   }
 
   @Get(':id')
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task found',
-    type: TaskResponseDto
-  })
-  findOne(@Param('id') id: string) {
-    return this.taskService.findOne(+id);
+  @FindOneTaskDocumentation()
+  findOne(@Param('id', new ParseIntPipe()) id: number) {
+    return this.taskService.findOne(id);
   }
 
   @Patch(':id')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @ApiBody({ type: PartialType(CreateTaskDto) })
-  @ApiResponse({
-    status: 200,
-    description: 'Task updated',
-    type: TaskResponseDto
-  })
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.taskService.update(+id, updateTaskDto);
+  @UpdateTaskDocumentation()
+  update(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Body() updateTaskDto: UpdateTaskDto
+  ) {
+    return this.taskService.update(id, updateTaskDto);
   }
 
   @Delete(':id')
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task deleted',
-    type: MessageResponseDto
-  })
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(+id);
+  @RemoveTaskDocumentation()
+  remove(@Param('id', new ParseIntPipe()) id: number) {
+    return this.taskService.remove(id);
   }
 
   @Patch(':id/pending')
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task status updated',
-    type: MessageResponseDto
-  })
-  toPending(@Param('id') id: string) {
-    return this.taskService.updateStatus(+id, TaskStatusEnum.PENDING);
+  @TaskStatusUpdateDocumentation()
+  toPending(@Param('id', new ParseIntPipe()) id: number) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.PENDING);
   }
 
   @Patch(':id/in_progress')
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task status updated',
-    type: MessageResponseDto
-  })
-  toProgress(@Param('id') id: string) {
-    return this.taskService.updateStatus(+id, TaskStatusEnum.IN_PROGRESS);
+  @TaskStatusUpdateDocumentation()
+  toProgress(@Param('id', new ParseIntPipe()) id: number) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.IN_PROGRESS);
   }
 
   @Patch(':id/completed')
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task status updated',
-    type: MessageResponseDto
-  })
-  toCompleted(@Param('id') id: string) {
-    return this.taskService.updateStatus(+id, TaskStatusEnum.COMPLETED);
+  @TaskStatusUpdateDocumentation()
+  toCompleted(@Param('id', new ParseIntPipe()) id: number) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.COMPLETED);
   }
 
   @Patch(':id/cancelled')
   @ApiParam({ name: 'id', description: 'Task ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Task status updated',
-    type: MessageResponseDto
-  })
-  toCancelled(@Param('id') id: string) {
-    return this.taskService.updateStatus(+id, TaskStatusEnum.CANCELLED);
+  @TaskStatusUpdateDocumentation()
+  toCancelled(@Param('id', new ParseIntPipe()) id: number) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.CANCELLED);
   }
 }

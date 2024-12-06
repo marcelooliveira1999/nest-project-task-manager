@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { PaginationOptionsDto } from './dto/pagination-options.dto';
+import { PaginationResponseDto } from './dto/pagination-response.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Task } from './entities/task.entity';
 import { TaskStatusEnum } from './enum/task-status.enum';
@@ -17,11 +19,29 @@ export class TaskService {
     return await this.taskRepository.save(newTask);
   }
 
-  async findAll(): Promise<Task[]> {
-    const tasks: Task[] = await this.taskRepository.find();
-    if (tasks.length > 0) return tasks;
+  async findAll(options: PaginationOptionsDto): Promise<PaginationResponseDto> {
+    const { page, limit } = options;
+    const skip: number = (page - 1) * limit;
 
-    throw new NotFoundException();
+    const [tasks, totalItems]: [Task[], number] =
+      await this.taskRepository.findAndCount({
+        skip,
+        take: limit
+      });
+
+    if (tasks.length === 0) throw new NotFoundException();
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      data: tasks,
+      metadata: {
+        page: page,
+        next: page < totalPages ? page + 1 : null,
+        limit: tasks.length,
+        totalItems,
+        totalPages
+      }
+    };
   }
 
   async findOne(id: number): Promise<Task> {

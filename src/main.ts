@@ -10,6 +10,7 @@ import { RootUserSeeder } from './db/seeders/root-user.seeder';
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
+      transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
       forbidUnknownValues: true
