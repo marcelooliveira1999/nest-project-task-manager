@@ -4,9 +4,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
 import { TaskStatusEnum } from '../enum/task-status.enum';
 
 @Entity({ name: 'task' })
@@ -36,4 +39,12 @@ export class Task {
   @Exclude()
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
+
+  @Exclude()
+  @ManyToOne(() => User, (user) => user.tasks, {
+    onDelete: 'CASCADE',
+    nullable: false
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }
