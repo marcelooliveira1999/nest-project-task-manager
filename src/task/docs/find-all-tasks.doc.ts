@@ -6,7 +6,7 @@ export function FindAllTasksDocumentation() {
   return applyDecorators(
     ApiResponse({
       status: 200,
-      description: 'All tasks found',
+      description: 'All tasks found of current user',
       type: PaginationResponseDto
     })
   );

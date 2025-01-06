@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CurrentUserDto } from '../helpers/custom-decorators/dto/current-user.dto';
+import { User } from '../user/entities/user.entity';
+import { UserService } from '../user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { PaginationOptionsDto } from './dto/pagination-options.dto';
 import { PaginationResponseDto } from './dto/pagination-response.dto';
@@ -11,20 +14,33 @@ import { TaskStatusEnum } from './enum/task-status.enum';
 @Injectable()
 export class TaskService {
   constructor(
-    @InjectRepository(Task) private readonly taskRepository: Repository<Task>
+    @InjectRepository(Task) private readonly taskRepository: Repository<Task>,
+    private readonly userService: UserService
   ) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    const newTask: Task = this.taskRepository.create(createTaskDto);
+  async create(
+    createTaskDto: CreateTaskDto,
+    currentUser: CurrentUserDto
+  ): Promise<Task> {
+    const user: User = await this.userService.findOne(currentUser.sub);
+    const newTask: Task = this.taskRepository.create({
+      ...createTaskDto,
+      user
+    });
+
     return await this.taskRepository.save(newTask);
   }
 
-  async findAll(options: PaginationOptionsDto): Promise<PaginationResponseDto> {
+  async findAll(
+    options: PaginationOptionsDto,
+    user: CurrentUserDto
+  ): Promise<PaginationResponseDto> {
     const { page, limit } = options;
     const skip: number = (page - 1) * limit;
 
     const [tasks, totalItems]: [Task[], number] =
       await this.taskRepository.findAndCount({
+        where: { user: { id: user.sub } },
         skip,
         take: limit
       });
@@ -44,27 +60,34 @@ export class TaskService {
     };
   }
 
-  async findOne(id: number): Promise<Task> {
-    const task: Task = await this.taskRepository.findOneBy({ id });
-    if (task) return task;
+  async findOne(id: number, user: CurrentUserDto): Promise<Task> {
+    const task: Task = await this.taskRepository.findOneBy({
+      id,
+      user: { id: user.sub }
+    });
 
+    if (task) return task;
     throw new NotFoundException();
   }
 
-  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    await this.findOne(id);
+  async update(
+    id: number,
+    updateTaskDto: UpdateTaskDto,
+    user: CurrentUserDto
+  ): Promise<Task> {
+    await this.findOne(id, user);
     await this.taskRepository.update({ id }, updateTaskDto);
-    return await this.findOne(id);
+    return await this.findOne(id, user);
   }
 
-  async remove(id: number) {
-    const task: Task = await this.findOne(id);
+  async remove(id: number, user: CurrentUserDto) {
+    const task: Task = await this.findOne(id, user);
     await this.taskRepository.softRemove(task);
     return { message: `Task ${id} deleted` };
   }
 
-  async updateStatus(id: number, status: TaskStatusEnum) {
-    const task: Task = await this.findOne(id);
+  async updateStatus(id: number, status: TaskStatusEnum, user: CurrentUserDto) {
+    const task: Task = await this.findOne(id, user);
     if (task.status === status)
       return { message: `The task status is already up-to-date` };
 

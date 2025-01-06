@@ -11,7 +11,9 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, PartialType } from '@nestjs/swagger';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
+import { CurrentUser } from '../helpers/custom-decorators/current-user.decorator';
+import { CurrentUserDto } from '../helpers/custom-decorators/dto/current-user.dto';
 import { CreateTaskDocumentation } from './docs/create-task.doc';
 import { FindAllTasksDocumentation } from './docs/find-all-tasks.doc';
 import { FindOneTaskDocumentation } from './docs/find-one-task.doc';
@@ -31,24 +33,31 @@ export class TaskController {
 
   @Post()
   @CreateTaskDocumentation()
-  create(@Body() createTaskDto: CreateTaskDto) {
-    return this.taskService.create(createTaskDto);
+  create(
+    @Body() createTaskDto: CreateTaskDto,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.create(createTaskDto, user);
   }
 
   @Get('book')
   @FindAllTasksDocumentation()
   findAll(
     @Query('page', new ParseIntPipe()) page: number,
-    @Query('limit', new ParseIntPipe()) limit: number
+    @Query('limit', new ParseIntPipe()) limit: number,
+    @CurrentUser() user: CurrentUserDto
   ) {
-    return this.taskService.findAll({ page, limit });
+    return this.taskService.findAll({ page, limit }, user);
   }
 
   @Get(':id')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @FindOneTaskDocumentation()
-  findOne(@Param('id', new ParseIntPipe()) id: number) {
-    return this.taskService.findOne(id);
+  findOne(
+    @Param('id', new ParseIntPipe()) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -57,43 +66,59 @@ export class TaskController {
   @UpdateTaskDocumentation()
   update(
     @Param('id', new ParseIntPipe()) id: number,
-    @Body() updateTaskDto: UpdateTaskDto
+    @Body() updateTaskDto: UpdateTaskDto,
+    @CurrentUser() user: CurrentUserDto
   ) {
-    return this.taskService.update(id, updateTaskDto);
+    return this.taskService.update(id, updateTaskDto, user);
   }
 
   @Delete(':id')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @RemoveTaskDocumentation()
-  remove(@Param('id', new ParseIntPipe()) id: number) {
-    return this.taskService.remove(id);
+  remove(
+    @Param('id', new ParseIntPipe()) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.remove(id, user);
   }
 
   @Patch(':id/pending')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @TaskStatusUpdateDocumentation()
-  toPending(@Param('id', new ParseIntPipe()) id: number) {
-    return this.taskService.updateStatus(id, TaskStatusEnum.PENDING);
+  toPending(
+    @Param('id', new ParseIntPipe()) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.PENDING, user);
   }
 
   @Patch(':id/in_progress')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @TaskStatusUpdateDocumentation()
-  toProgress(@Param('id', new ParseIntPipe()) id: number) {
-    return this.taskService.updateStatus(id, TaskStatusEnum.IN_PROGRESS);
+  toProgress(
+    @Param('id', new ParseIntPipe()) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.IN_PROGRESS, user);
   }
 
   @Patch(':id/completed')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @TaskStatusUpdateDocumentation()
-  toCompleted(@Param('id', new ParseIntPipe()) id: number) {
-    return this.taskService.updateStatus(id, TaskStatusEnum.COMPLETED);
+  toCompleted(
+    @Param('id', new ParseIntPipe()) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.COMPLETED, user);
   }
 
   @Patch(':id/cancelled')
   @ApiParam({ name: 'id', description: 'Task ID' })
   @TaskStatusUpdateDocumentation()
-  toCancelled(@Param('id', new ParseIntPipe()) id: number) {
-    return this.taskService.updateStatus(id, TaskStatusEnum.CANCELLED);
+  toCancelled(
+    @Param('id', new ParseIntPipe()) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.taskService.updateStatus(id, TaskStatusEnum.CANCELLED, user);
   }
 }
