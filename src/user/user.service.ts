@@ -4,7 +4,10 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { RoleEnum } from 'src/role/enum/role.enum';
 import { Repository } from 'typeorm';
+import { Role } from '../role/entities/role.entity';
+import { RoleService } from '../role/role.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -12,11 +15,16 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(User) private readonly userReporitory: Repository<User>
+    @InjectRepository(User) private readonly userReporitory: Repository<User>,
+    private readonly roleService: RoleService
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const newUser: User = this.userReporitory.create(createUserDto);
+    const role: Role = await this.roleService.find(RoleEnum.USER);
+    const newUser: User = this.userReporitory.create({
+      ...createUserDto,
+      role
+    });
     return await this.userReporitory.save(newUser);
   }
 
@@ -61,6 +69,9 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return await this.userReporitory.findOneBy({ email });
+    return await this.userReporitory.findOne({
+      where: { email },
+      relations: { role: true }
+    });
   }
 }

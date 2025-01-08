@@ -4,10 +4,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm';
+import { Role } from '../../role/entities/role.entity';
 import { Task } from '../../task/entities/task.entity';
 
 @Entity({ name: 'user' })
@@ -36,4 +39,12 @@ export class User {
 
   @OneToMany(() => Task, (task) => task.user)
   tasks: Task[];
+
+  @Exclude()
+  @ManyToOne(() => Role, (role) => role.users, {
+    onDelete: 'CASCADE',
+    nullable: false
+  })
+  @JoinColumn({ name: 'role_id' })
+  role: Role;
 }

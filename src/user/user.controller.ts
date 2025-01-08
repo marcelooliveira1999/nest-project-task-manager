@@ -6,11 +6,11 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
-  Post,
-  UseGuards
+  Post
 } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard';
 import { PasswordHashPipe } from 'src/helpers/custom-pipes/password-hash.pipe';
+import { Roles } from 'src/role/decorator/role.reflector';
+import { RoleEnum } from 'src/role/enum/role.enum';
 import { CreateUserDocumentation } from './docs/create-user.doc';
 import { FindAllUsersDocumentation } from './docs/find-all-users.doc';
 import { FindOneUserDocumentation } from './docs/find-one-user.doc';
@@ -27,7 +27,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @Roles([RoleEnum.ADMIN])
   @CreateUserDocumentation()
   create(
     @Body() createUserDto: CreateUserDto,
@@ -38,18 +38,21 @@ export class UserController {
   }
 
   @Get()
+  @Roles([RoleEnum.ADMIN])
   @FindAllUsersDocumentation()
   findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
+  @Roles([RoleEnum.ADMIN])
   @FindOneUserDocumentation()
   findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.userService.findOne(id);
   }
 
   @Patch(':id')
+  @Roles([RoleEnum.ADMIN])
   @UpdateUserDocumentation()
   update(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -59,12 +62,14 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Roles([RoleEnum.ADMIN])
   @RemoveUserDocumentation()
   remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.userService.remove(id);
   }
 
   @Patch(':id/update-password')
+  @Roles([RoleEnum.ADMIN])
   @UpdateUserPasswordDocumentation()
   updatePassword(
     @Param('id', new ParseUUIDPipe()) id: string,
