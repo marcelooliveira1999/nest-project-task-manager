@@ -25,7 +25,12 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const payload = { sub: user.id, email };
+    const payload = {
+      sub: user.id,
+      email,
+      role: user.role.tag
+    };
+
     const token = this.jwtService.sign(payload);
     return { token, expiresIn: +this.expiresIn };
   }
